@@ -1,6 +1,6 @@
 import React from "react";
 import "./header.css";
-import ToogleSwitch from "../ToggleSwtich/ToggleSwitch.jsx";
+import ToogleSwitch from "../ToggleSwtich/ToggleSwitch";
 import Theme from "./Theme";
 import { useSelector, useDispatch } from "react-redux";
 import { bindActionCreators } from "redux";

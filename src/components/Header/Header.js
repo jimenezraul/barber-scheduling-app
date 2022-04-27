@@ -47,7 +47,7 @@ class Header extends React.Component {
                 ></img>
               </a>
             </div>
-            <div className="md:flex flex p-1 bg-gray-400 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-inner rounded-full">
+            <div className="hidden md:flex p-1 bg-gray-400 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-inner rounded-full">
       <div className="hidden md:flex items-center">
         <a
           href="/"
