@@ -1,0 +1,21 @@
+.card-img{
+    background-image: url( ../../assets/img/IMG_4309.png ); 
+    background-blend-mode: multiply;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.my-font{
+    font-family: 'Kaushan Script', cursive;
+    text-shadow: -2px 5px 8px rgba(0, 0, 0, 0.625);
+}
+
+.my-font2{
+    font-family: 'Oswald', sans-serif;
+}
+
+
+.bg-pic {
+    height: 80vh!important;
+}
