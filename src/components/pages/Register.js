@@ -1,16 +1,15 @@
 import React, { useState } from "react";
-import GLogin from "../GoogleButton/Login";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { login_content } from "./content";
+import { register_content } from "./content";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { api_login } from "../MainApi/MainApi";
-import { setCurrentUser } from "../../redux/index";
-import { bindActionCreators } from "redux";
+import { register_user } from "../MainApi/MainApi";
 
 const schema = yup.object().shape({
+  first_name: yup.string().required("Name is a required field"),
+  last_name: yup.string().required("Last Name is a required field"),
   email: yup
     .string()
     .email("Must be a valid email")
@@ -19,21 +18,23 @@ const schema = yup.object().shape({
     .string()
     .required("Password is a required field")
     .min(8, "Password must be at least 8 characters"),
+  password2: yup
+    .string()
+    .required("Confirm Password is required")
+    .oneOf([yup.ref("password")], "Passwords must match"),
 });
 
-export default function Login(props) {
+export default function Register(props) {
   const [prevPage, setPrevPage] = useState("");
   const [msg, setMsg] = useState("");
+  const [show, setshow] = useState(false);
   const authUser = useSelector((state) => state.user).isAuthUser;
-  const dispatch = useDispatch();
-  const { login } = bindActionCreators(setCurrentUser, dispatch);
-
   if (props.history.location.state) {
     if (prevPage !== props.history.location.state.from.pathname) {
       setPrevPage(props.history.location.state.from.pathname);
     }
   }
-  
+
   const {
     register,
     handleSubmit,
@@ -43,35 +44,61 @@ export default function Login(props) {
   });
 
   const onSubmit = async (data) => {
-    let res = await api_login(data.email, data.password);
-    if (res.detail) {
-      setMsg(res.detail);
+    const res = await register_user(
+      data.email,
+      data.password,
+      data.first_name,
+      data.last_name
+    );
+    let message = "";
+    document.getElementById("register-form").reset();
+    setshow(true);
+    if (res.status === 201) {
+      message = "Account Created. Check your email to activate your account.";
     } else {
-      const response = JSON.parse(localStorage.getItem("user"));
-      login(response);
+      message = "Something went wrong!";
     }
+    setMsg(message);
   };
+
+  if (show) {
+    setTimeout(() => {
+      setshow(false);
+    }, 4000);
+  }
 
   return (
     <div className="relative flex flex-col w-full">
       {!authUser ? (
-        <div className="flex justify-center items-center min-h-screen p-2 text-gray-600 dark:text-gray-100">
-          <div className="shadow-lg overflow-hidden border-gray-200 w-full sm:w-10/12 md:w-9/12 lg:w-6/12 xl:w-5/12 rounded-lg border dark:border-gray-600">
+        <div className="relative mt-6 flex justify-center items-center min-h-screen px-2  py-10 text-gray-600 dark:text-gray-100">
+          <div className="shadow-lg overflow-hidden border-gray-200 w-full sm:w-10/12 md:w-9/12 lg:w-7/12 xl:w-5/12 rounded-lg border dark:border-gray-600">
+            {show ? (
+              <div
+                class="transition duration-75 ease-in-out absolute top-12 px-4 py-3 leading-normal text-green-700 bg-green-100 rounded-lg"
+                role="alert"
+              >
+                <p class="transition duration-75 ease-in-out font-bold">
+                  {msg}
+                </p>
+              </div>
+            ) : (
+              <div></div>
+            )}
             <div className="min-w-full">
               <div className="bg-gray-50 dark:bg-gray-800">
                 <div>
                   <div className="font-bold text-center px-10 py-3 text-gray-500 dark:text-gray-200 text-2xl dark:border-gray-600">
-                    Login
+                    Register
                   </div>
                 </div>
               </div>
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="flex flex-col justify-center items-center bg-gray-300 dark:bg-gray-700">
-                  <div className="w-full pt-8">
-                    <div className="text-center text-red-500">{msg}</div>
-                  </div>
-                  <div className="w-10/12 md:w-3/5 flex flex-col  space-y-3 py-10">
-                    {login_content.inputs.map((input, key) => {
+              <form id="register-form" onSubmit={handleSubmit(onSubmit)}>
+                <div className="flex justify-center bg-gray-300 dark:bg-gray-700">
+                  <div className="w-10/12 md:w-3/5 flex flex-col  space-y-3 ">
+                    <p className="py-2 px-3">
+                      Fill in this form to create an account.
+                    </p>
+                    {register_content.inputs.map((input, key) => {
                       return (
                         <div key={key}>
                           <input
@@ -92,36 +119,20 @@ export default function Login(props) {
                         className="shadow bg-blue-500 hover:bg-blue-600 text-gray-100 font-bold py-2 px-4 rounded"
                         type="submit"
                       >
-                        Login
+                        Register
                       </button>
-                      <a
-                        className="inline-block align-baseline font-bold text-sm hover:text-blue-500 underline"
-                        href="/forgot"
-                      >
-                        Forgot Password?
-                      </a>
-                    </div>
-                    <div className="relative z-auto block text-center border-t border-gray-400 pt-5">
-                      <div className="flex justify-center">
-                        <div className="px-2 bg-gray-300 dark:bg-gray-700 absolute -top-4 text-lg mb-2">
-                          or
-                        </div>
-                      </div>
-                      <div className="pt-5 pb-5 ">
-                        <GLogin />
-                      </div>
                     </div>
                   </div>
                 </div>
               </form>
               <div className="text-center bg-gray-200 dark:bg-gray-800">
                 <p className="py-3">
-                  Need an Account? Click{" "}
+                  Already have an Account?{" "}
                   <a
-                    href="/register"
+                    href="/login"
                     className="text-blue-600 font-bold underline"
                   >
-                    here.
+                    Sign in.
                   </a>
                 </p>
               </div>
