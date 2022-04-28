@@ -1,8 +1,9 @@
 import { refreshToken } from "../Setmore/Setmore";
-const mainURL = "https://thirsty-cray-67581c.netlify.app";
-const URL = "https://thebarberapi.herokuapp.com";
-// const mainURL = "http://localhost:3000";
-// const URL = "http://localhost:8000";
+import Cookies from "js-cookie";
+// const mainURL = "https://thirsty-cray-67581c.netlify.app";
+// const URL = "https://thebarberapi.herokuapp.com";
+const mainURL = "http://localhost:3000";
+const URL = "http://localhost:8000";
 
 let _csrfToken = null;
 
@@ -80,28 +81,37 @@ export async function get_api_key(token) {
 }
 
 export async function get_google_token(token) {
-  var myHeaders = new Headers();
-  const csrt = await getCsrfToken();
-  myHeaders.append("Content-Type", "application/json");
-  myHeaders.append("Cookie", csrt);
-  const link = "/social_auth/google/";
-  var raw = JSON.stringify({
-    auth_token: token,
-  });
+  try {
+    var myHeaders = new Headers();
+    const csrt = await getCsrfToken();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Cookie", csrt);
+    const link = "/social_auth/google/";
+    var raw = JSON.stringify({
+      auth_token: token,
+    });
 
-  var requestOptions = {
-    method: "POST",
-    headers: myHeaders,
-    body: raw,
-    redirect: "follow",
-  };
+    var requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
 
-  let res = await fetch(URL + link, requestOptions);
-  res = await res.json();
-  document.cookie = "token=" + JSON.stringify(res.tokens);
-  get_tokens();
-  await refreshToken();
-  return res;
+    let res = await fetch(URL + link, requestOptions);
+    if (res.ok) {
+      res = await res.json();
+      document.cookie = "token=" + JSON.stringify(res.tokens);
+      get_tokens();
+      await refreshToken();
+      return res;
+    } else {
+      res = await res.json();
+      return res;
+    }
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 //get the refresh token and access token from cookies
@@ -198,44 +208,43 @@ export async function api_logout(r_token, a_token) {
 }
 
 export async function api_login(user_email, user_password) {
-  async function post_login(email, password) {
-    var myHeaders = new Headers();
+  try {
+    const myHeaders = new Headers();
     const csrt = await getCsrfToken();
     myHeaders.append("Content-Type", "application/json");
     myHeaders.append("Cookie", csrt);
-    const link = "/auth/login/";
-    var raw = JSON.stringify({
-      email: email,
-      password: password,
-    });
-    var requestOptions = {
+
+    const post_login = await fetch(URL + "/auth/login/", {
       method: "POST",
       headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-    let res = await fetch(URL + link, requestOptions);
-    return res;
-  }
-
-  let res = await post_login(user_email, user_password);
-  if (res.status === 200) {
-    const response = await res.json();
-    const data = JSON.stringify({
-      imageUrl: "",
-      email: `${response.email}`,
-      name: `${response.username}`,
-      givenName: `${response.first_name}`,
-      familyName: `${response.last_name}`,
-      provider: "email",
+      body: JSON.stringify(
+        {
+          email: user_email,
+          password: user_password,
+        }
+      ),
     });
-    localStorage.setItem("user", data);
-    document.cookie = "token=" + JSON.stringify(response.tokens);
-    get_tokens();
-    return response;
+    
+    if (post_login.ok) {
+      const response = await post_login.json();
+      Cookies.set(
+        "user",
+        JSON.stringify({
+          imageUrl: "",
+          email: `${response.email}`,
+          name: `${response.username}`,
+          givenName: `${response.first_name}`,
+          familyName: `${response.last_name}`,
+          provider: "email",
+        })
+      );
+      return response;
+    } else {
+      return post_login.json();
+    }
+  } catch (error) {
+    console.log("error: ", error);
   }
-  res = await res.json();
-  return res;
 }
 
 export function request_reset_password(email) {

@@ -3,6 +3,7 @@ import { GoogleLogin, GoogleLogout } from "react-google-login";
 import { useSelector, useDispatch } from "react-redux";
 import { bindActionCreators } from "redux";
 import { setCurrentUser } from "../../redux/index.js";
+import Cookies from "js-cookie";
 import {
   get_access_token,
   get_google_token,
@@ -29,6 +30,15 @@ function GLogin() {
   const onLoginSuccess = async (res) => {
     await get_google_token(res.tokenObj.id_token);
     const g_user = { ...res.profileObj, provider: "google" };
+    
+    Cookies.set("user", decodeURI(JSON.stringify({
+      imageUrl: `${res.profileObj.imageUrl}`,
+      email: `${res.profileObj.email}`,
+      name: `${res.profileObj.name}`,
+      givenName: `${res.profileObj.givenName}`,
+      familyName: `${res.profileObj.familyName}`,
+      provider: "google",
+    })));
     login(g_user);
   };
 

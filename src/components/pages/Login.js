@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import GLogin from "../GoogleButton/Login";
+import Cookies from "js-cookie";
 import { useSelector, useDispatch } from "react-redux";
 import { Navigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -44,14 +45,15 @@ export default function Login(props) {
 
   const onSubmit = async (data) => {
     let res = await api_login(data.email, data.password);
+    console.log(res);
     if (res.detail) {
       setMsg(res.detail);
     } else {
-      const response = JSON.parse(localStorage.getItem("user"));
+      const response = JSON.parse(Cookies.get("user"));
       login(response);
     }
   };
-
+  
   return (
     <div className="relative flex flex-col w-full">
       {!authUser ? (
@@ -129,7 +131,7 @@ export default function Login(props) {
           </div>
         </div>
       ) : (
-        <Navigate to={prevPage} />
+        <Navigate to="/" />
       )}
     </div>
   );

@@ -8,13 +8,13 @@ import { darkMode } from "../../redux/index";
 import CustomButton from "../customButton/customButton";
 
 function Settings() {
-  const current_user = useSelector((state) => state.user).currentUser;
+  let current_user = useSelector((state) => state.user).currentUser;
   const authUser = useSelector((state) => state.user).isAuthUser;
 
   const status = useSelector((state) => state.toggle);
   const dispatch = useDispatch();
   const { darkOn, darkOff } = bindActionCreators(darkMode, dispatch);
-
+ 
   const toggleState = function () {
     if (status) {
       darkOff(false);

@@ -1,22 +1,20 @@
 import { LOGIN, LOGOUT } from "./userAction";
-
+import Cookies from "js-cookie";
 const INITIAL_STATE = {
-  currentUser: JSON.parse(localStorage.getItem("user")) || {},
-  isAuthUser: !!localStorage.getItem("user"),
+  currentUser: !!Cookies.get('user') ? JSON.parse(Cookies.get('user')) : {} ,
+  isAuthUser: !!Cookies.get("user"),
   provider: "",
 };
 
 const reducer = (state = INITIAL_STATE, action) => {
   switch (action.type) {
     case LOGIN:
-      localStorage.setItem("user", JSON.stringify(action.payload));
       return {
-        isAuthUser: true,
         currentUser: action.payload,
+        isAuthUser: true,
         provider: action.payload.provider,
       };
     case LOGOUT:
-      localStorage.removeItem("user");
       return { isAuthUser: false, currentUser: {}, provider: "" };
     default:
       return state;
