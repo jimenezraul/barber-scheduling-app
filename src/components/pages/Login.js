@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { login_content } from "./content";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { api_login } from "../MainApi/MainApi";
+import { api_login } from "./js/login";
 import { setCurrentUser } from "../../redux/index";
 import { bindActionCreators } from "redux";
 

@@ -20,15 +20,8 @@ export async function getCsrfToken() {
 }
 
 export const get_refresh_token = () => {
-  if (document.cookie && document.cookie !== "") {
-    let cookie = document.cookie;
-    cookie = cookie.split("; ");
-    cookie = cookie.filter((i) => i.startsWith("refresh="));
-    if (cookie.length) {
-      cookie = cookie[0].split("refresh=")[1];
-      return cookie;
-    }
-    return null;
+  if (Cookies.get("token")) {
+    return JSON.parse(Cookies.get("token")).refresh;
   }
   return null;
 };
@@ -136,15 +129,8 @@ export const get_tokens = () => {
 };
 
 export const get_access_token = () => {
-  if (document.cookie && document.cookie !== "") {
-    let cookie = document.cookie;
-    cookie = cookie.split("; ");
-    cookie = cookie.filter((i) => i.startsWith("access="));
-    if (cookie.length) {
-      cookie = cookie[0].split("access=")[1];
-      return cookie;
-    }
-    return null;
+  if (Cookies.get("token")) {
+    return JSON.parse(Cookies.get("token")).access;
   }
   return null;
 };
@@ -164,87 +150,13 @@ export const get_setmore_token = () => {
 };
 
 export function deleteCookies() {
+  Cookies.remove("access");
+  Cookies.remove("user");
+  Cookies.remove("csrftoken");
   const cookies_list = ["token", "access", "refresh"];
   cookies_list.forEach((name) => {
     document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"`;
   });
-}
-
-export async function api_logout(r_token, a_token) {
-  async function post_logout(refresh, access) {
-    var myHeaders = new Headers();
-    const csrt = await getCsrfToken();
-    myHeaders.append("Content-Type", "application/json");
-    myHeaders.append("Cookie", csrt);
-    myHeaders.append("Authorization", `Bearer ${access}`);
-    const link = "/auth/logout/";
-    var raw = JSON.stringify({
-      refresh: refresh,
-    });
-    var requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-    let res = await fetch(URL + link, requestOptions);
-    return res;
-  }
-
-  let res = await post_logout(r_token, a_token);
-  if (res.status >= 400) {
-    let response = await refresh_token();
-    if (response >= 400) {
-      deleteCookies();
-      return null;
-    }
-    response = await response.json();
-    res = await post_logout(r_token, response.access);
-    deleteCookies();
-    return res;
-  }
-  deleteCookies();
-  return res;
-}
-
-export async function api_login(user_email, user_password) {
-  try {
-    const myHeaders = new Headers();
-    const csrt = await getCsrfToken();
-    myHeaders.append("Content-Type", "application/json");
-    myHeaders.append("Cookie", csrt);
-
-    const post_login = await fetch(URL + "/auth/login/", {
-      method: "POST",
-      headers: myHeaders,
-      body: JSON.stringify(
-        {
-          email: user_email,
-          password: user_password,
-        }
-      ),
-    });
-    
-    if (post_login.ok) {
-      const response = await post_login.json();
-      Cookies.set(
-        "user",
-        JSON.stringify({
-          imageUrl: "",
-          email: `${response.email}`,
-          name: `${response.username}`,
-          givenName: `${response.first_name}`,
-          familyName: `${response.last_name}`,
-          provider: "email",
-        })
-      );
-      return response;
-    } else {
-      return post_login.json();
-    }
-  } catch (error) {
-    console.log("error: ", error);
-  }
 }
 
 export function request_reset_password(email) {

@@ -1,9 +1,9 @@
 import React from "react";
 import {
   get_access_token,
-  get_refresh_token,
-  api_logout,
-} from "../MainApi/MainApi.js";
+  get_refresh_token
+} from "../MainApi/MainApi";
+import { api_logout } from '../pages/js/logout'
 import { useDispatch } from "react-redux";
 import { bindActionCreators } from "redux";
 import { setCurrentUser } from "../../redux/index.js";

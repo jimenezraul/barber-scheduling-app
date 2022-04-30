@@ -8,8 +8,8 @@ import {
   get_access_token,
   get_google_token,
   get_refresh_token,
-  api_logout,
 } from "../MainApi/MainApi.js";
+import { api_logout } from "../pages/js/logout";
 
 const clientId =
   "759091763684-s8i5j4sq4fr84mqneo6vaq7de4sdu7hd.apps.googleusercontent.com";
